@@ -225,7 +225,8 @@ def main():
     print(f'There are {len(source_data)} samples are loaded from {input_dataset_path}.')
 
     n_rows = 0
-    with codecs.open(os.path.join(output_dataset_path, 'train_data.csv'), mode='w', encoding='utf-8') as fp:
+    output_fname = os.path.join(output_dataset_path, 'train_data.csv')
+    with codecs.open(output_fname, mode='w', encoding='utf-8', buffering=0) as fp:
         data_writer = csv.writer(fp, delimiter=',', quotechar='"')
         data_writer.writerow(['source_text', 'text_without_coreference'])
         for sample_idx, (text, coreference_chains) in enumerate(tqdm(source_data)):
@@ -252,8 +253,15 @@ def main():
                         is_valid = False
                     else:
                         entities.sort(key=lambda it: (-len(it), it))
-                        main_entity = entities[0]
-                        if len(main_entity) < ((4 * len(entities[1])) // 3):
+                        main_entity = ''
+                        for cur_entity in entities:
+                            if (len(cur_entity) > 1) and cur_entity.isupper():
+                                main_entity = cur_entity
+                                break
+                        if len(main_entity) == 0:
+                            main_entity = entities[0]
+                        if len(main_entity) < 2:
+                            warnings.warn(f'Main entity in the sample {sample_idx} is not found.')
                             is_valid = False
                         else:
                             for entity_start, entity_end in cur_chain:
@@ -295,7 +303,9 @@ def main():
                         else:
                             warnings.warn(f'Some entities in the sample {sample_idx} are overlapped.')
                 del substitutions
-    print(f'There are {n_rows} are written into the "{os.path.join(output_dataset_path, "train_data.csv")}".')
+            else:
+                warnings.warn(f'Some entities in the sample {sample_idx} have a wrong bounds.')
+    print(f'There are {n_rows} are written into the "{output_fname}".')
 
 
 if __name__ == '__main__':
