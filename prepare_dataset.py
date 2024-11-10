@@ -253,7 +253,7 @@ def main():
                     else:
                         entities.sort(key=lambda it: (-len(it), it))
                         main_entity = entities[0]
-                        if len(main_entity) < (len(entities[1]) * 2):
+                        if len(main_entity) < ((4 * len(entities[1])) // 3):
                             is_valid = False
                         else:
                             for entity_start, entity_end in cur_chain:
