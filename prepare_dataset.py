@@ -264,13 +264,20 @@ def main():
                 if is_valid:
                     if len(substitutions) > 0:
                         substitutions.sort(key=lambda it: (it[0], it[1], len(it[2])))
+                        filtered_substitutions = []
                         filled = [0 for _ in range(len(prepared_text))]
-                        for entity_start, entity_end, _ in substitutions:
+                        for entity_start, entity_end, entity_text in substitutions:
+                            ok = True
                             for char_idx in range(entity_start, entity_end):
                                 if filled[char_idx] != 0:
-                                    is_valid = False
+                                    ok = False
                                     break
-                                filled[char_idx] = 1
+                            if ok:
+                                for char_idx in range(entity_start, entity_end):
+                                    filled[char_idx] = 1
+                                filtered_substitutions.append((entity_start, entity_end, entity_text))
+                        if len(filtered_substitutions) < 2:
+                            is_valid = False
                         if is_valid:
                             n_rows += 1
                             new_text = prepared_text[0:substitutions[0][0]]
